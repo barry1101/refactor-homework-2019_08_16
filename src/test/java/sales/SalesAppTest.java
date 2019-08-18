@@ -29,14 +29,13 @@ public class SalesAppTest {
         doReturn(salesDao).when(salesApp).getSalesDao();
         doReturn(salesReportDao).when(salesApp).getSalesReportDao();
         doReturn(ecmService).when(salesApp).getEcmService();
-        doReturn("").when(salesActivityReport).toXml();
         doReturn(salesActivityReport).when(salesApp).generateReport(anyListOf(String.class), anyListOf(SalesReportData.class));
         doReturn(true).when(salesApp).isInValidityPeriod(any(Sales.class));
         doReturn(Arrays.asList("Sales ID", "Sales Name", "Activity", "Time")).when(salesApp).generateHeaders(false);
 
         salesApp.generateSalesActivityReport("DUMMY", false);
 
-        verify(ecmService).uploadDocument(anyString());
+        verify(salesApp).uploadDocument(salesActivityReport);
     }
 
     @Test
@@ -69,5 +68,17 @@ public class SalesAppTest {
         SalesApp salesApp = new SalesApp();
         List<String> headers = salesApp.generateHeaders(false);
         assertEquals("Local Time", headers.get(3));
+    }
+
+    @Test
+    public void should_upload_document_when_call_uploadDocument() {
+        SalesApp salesApp = spy(new SalesApp());
+        SalesActivityReport salesActivityReport = spy(new SalesActivityReport());
+        EcmService ecmService = spy(new EcmService());
+        doReturn("").when(salesActivityReport).toXml();
+        doReturn(ecmService).when(salesApp).getEcmService();
+        salesApp.uploadDocument(salesActivityReport);
+
+        verify(salesApp.getEcmService()).uploadDocument("");
     }
 }

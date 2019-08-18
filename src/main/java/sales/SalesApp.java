@@ -9,17 +9,14 @@ public class SalesApp {
     public void generateSalesActivityReport(String salesId, boolean isNatTrade) {
         if (salesId == null) return;
 
-        SalesDao salesDao = getSalesDao();
-        Sales sales = salesDao.getSalesBySalesId(salesId);
+        Sales sales = getSalesDao().getSalesBySalesId(salesId);
         if (!isInValidityPeriod(sales)) return;
 
-        SalesReportDao salesReportDao = getSalesReportDao();
-        List<SalesReportData> reportDataList = salesReportDao.getReportData(sales);
+        List<SalesReportData> reportDataList = getSalesReportDao().getReportData(sales);
         List<String> headers = generateHeaders(isNatTrade);
         SalesActivityReport report = this.generateReport(headers, reportDataList);
 
-        EcmService ecmService = getEcmService();
-        ecmService.uploadDocument(report.toXml());
+        uploadDocument(report);
     }
 
     protected boolean isInValidityPeriod(Sales sales) {
@@ -35,6 +32,10 @@ public class SalesApp {
 
     protected SalesActivityReport generateReport(List<String> headers, List<SalesReportData> reportDataList) {
         return null;
+    }
+
+    protected void uploadDocument(SalesActivityReport report) {
+        getEcmService().uploadDocument(report.toXml());
     }
 
     protected SalesDao getSalesDao() {
