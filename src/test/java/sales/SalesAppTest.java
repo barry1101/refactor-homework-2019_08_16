@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +24,6 @@ public class SalesAppTest {
         EcmService ecmService = spy(new EcmService());
         SalesActivityReport salesActivityReport = spy(new SalesActivityReport());
 
-        doReturn(false).when(salesReportData).isConfidential();
         doReturn(sales).when(salesDao).getSalesBySalesId(anyString());
         doReturn(salesReportDataList).when(salesReportDao).getReportData(any(Sales.class));
         doReturn(salesDao).when(salesApp).getSalesDao();
@@ -32,8 +32,9 @@ public class SalesAppTest {
         doReturn("").when(salesActivityReport).toXml();
         doReturn(salesActivityReport).when(salesApp).generateReport(anyListOf(String.class), anyListOf(SalesReportData.class));
         doReturn(true).when(salesApp).isInValidityPeriod(any(Sales.class));
+        doReturn(Arrays.asList("Sales ID", "Sales Name", "Activity", "Time")).when(salesApp).generateHeaders(false);
 
-        salesApp.generateSalesActivityReport("DUMMY", 1, false, false);
+        salesApp.generateSalesActivityReport("DUMMY", false);
 
         verify(ecmService).uploadDocument(anyString());
     }
@@ -54,5 +55,19 @@ public class SalesAppTest {
 
         boolean result = salesApp.isInValidityPeriod(sales);
         assertTrue(result);
+    }
+
+    @Test
+    public void should_return_headers_with_time_column_when_generate_headers_with_national_trade() {
+        SalesApp salesApp = new SalesApp();
+        List<String> headers = salesApp.generateHeaders(true);
+        assertEquals("Time", headers.get(3));
+    }
+
+    @Test
+    public void should_return_headers_with_local_time_column_when_generate_headers_with_not_national_trade() {
+        SalesApp salesApp = new SalesApp();
+        List<String> headers = salesApp.generateHeaders(false);
+        assertEquals("Local Time", headers.get(3));
     }
 }
